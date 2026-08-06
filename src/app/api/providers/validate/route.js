@@ -103,6 +103,10 @@ export async function POST(request) {
         if (!node) {
           return NextResponse.json({ error: "OpenAI Compatible node not found" }, { status: 404 });
         }
+        // For AWS Bedrock connections, SigV4 is required — skip Bearer-based validation
+        if (node.prefix === "bedrock") {
+          return NextResponse.json({ valid: true });
+        }
         const modelsUrl = `${node.baseUrl?.replace(/\/$/, "")}/models`;
         const res = await fetch(modelsUrl, {
           headers: { "Authorization": `Bearer ${apiKey}` },

@@ -25,6 +25,7 @@ import ZedExecutor from "./zed.js";
 import WindsurfExecutor from "./windsurf.js";
 import { DefaultExecutor } from "./default.js";
 import { DevinCliExecutor } from "./devin-cli.js";
+import { BedrockExecutor } from "./bedrock.js";
 
 const executors = {
   antigravity: new AntigravityExecutor(),
@@ -60,12 +61,23 @@ const executors = {
   "devin-cli": new DevinCliExecutor(),
 };
 
+const bedrockExecutor = new BedrockExecutor();
 const defaultCache = new Map();
 
-export function getExecutor(provider) {
+export function getExecutor(provider, credentials) {
+  console.log("[EXECUTOR DEBUG] provider:", provider, "credentials?.providerSpecificData?.prefix:", credentials?.providerSpecificData?.prefix, "credentials?.providerSpecificData?.baseUrl:", credentials?.providerSpecificData?.baseUrl?.slice(0, 50));
+  // Route Bedrock connections to the BedrockExecutor
+  if (credentials && isBedrockConnection(credentials)) return bedrockExecutor;
   if (executors[provider]) return executors[provider];
   if (!defaultCache.has(provider)) defaultCache.set(provider, new DefaultExecutor(provider));
   return defaultCache.get(provider);
+}
+
+function isBedrockConnection(credentials) {
+  const psd = credentials?.providerSpecificData;
+  if (psd?.prefix === "bedrock" || psd?.baseUrl?.includes("bedrock-runtime")) return true;
+  if (psd?.nodeName?.toLowerCase().includes("bedrock")) return true;
+  return false;
 }
 
 export function hasSpecializedExecutor(provider) {
