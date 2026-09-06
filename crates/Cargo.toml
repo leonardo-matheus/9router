@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "9router-bootstrap",
+]
+resolver = "2"
